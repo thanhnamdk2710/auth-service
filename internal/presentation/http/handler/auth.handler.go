@@ -7,6 +7,7 @@ import (
 	"github.com/thanhnamdk2710/auth-service/internal/application/input"
 	"github.com/thanhnamdk2710/auth-service/internal/application/usecase"
 	"github.com/thanhnamdk2710/auth-service/internal/presentation/http/request"
+	"github.com/thanhnamdk2710/auth-service/internal/validation"
 )
 
 type AuthHandler struct {
@@ -23,6 +24,14 @@ func (h AuthHandler) Register(ctx *gin.Context) {
 	var req request.RegisterRequest
 
 	if err := ctx.ShouldBindBodyWithJSON(&req); err != nil {
+		if errs := validation.TranslateAll(err); errs != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{
+				"message": "validation failed",
+				"errors":  errs,
+			})
+			return
+		}
+
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
