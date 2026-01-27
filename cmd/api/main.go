@@ -1,11 +1,18 @@
 package main
 
 import (
-	router "github.com/thanhnamdk2710/auth-service/internal/presentation/http"
+	"log"
+
+	"github.com/thanhnamdk2710/auth-service/internal/app"
 )
 
 func main() {
-	server := router.NewRouter()
+	application, err := app.New()
+	if err != nil {
+		log.Fatal("Failed to create application: " + err.Error())
+	}
 
-	server.Run(":8000")
+	if err := application.Run(); err != nil {
+		log.Fatal("Application error: " + err.Error())
+	}
 }

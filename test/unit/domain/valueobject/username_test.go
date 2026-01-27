@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/thanhnamdk2710/auth-service/internal/domain/exception"
-	vo "github.com/thanhnamdk2710/auth-service/internal/domain/valueobject"
+	"github.com/thanhnamdk2710/auth-service/internal/domain/vo"
 )
 
 func TestNewUsername(t *testing.T) {

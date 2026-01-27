@@ -5,7 +5,7 @@ import (
 
 	"github.com/thanhnamdk2710/auth-service/internal/domain/entity"
 	"github.com/thanhnamdk2710/auth-service/internal/domain/exception"
-	vo "github.com/thanhnamdk2710/auth-service/internal/domain/valueobject"
+	"github.com/thanhnamdk2710/auth-service/internal/domain/vo"
 )
 
 func createValidUser(t *testing.T) *entity.User {
@@ -26,7 +26,7 @@ func createValidUser(t *testing.T) *entity.User {
 		t.Fatalf("failed to create Email: %v", err)
 	}
 
-	return entity.NewUser(userID, username, email)
+	return entity.NewUser(userID, *username, email)
 }
 
 func TestNewUser(t *testing.T) {

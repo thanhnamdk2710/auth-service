@@ -20,22 +20,22 @@ type Username struct {
 	value string
 }
 
-func NewUsername(value string) (Username, error) {
+func NewUsername(value string) (*Username, error) {
 	trimmed := strings.TrimSpace(value)
 
 	if trimmed == "" {
-		return Username{}, exception.ErrUsernameRequired
+		return nil, exception.ErrUsernameRequired
 	}
 
 	if len(trimmed) < UsernameMinLength || len(trimmed) > UsernameMaxLength {
-		return Username{}, exception.ErrUsernameMinMaxLength
+		return nil, exception.ErrUsernameMinMaxLength
 	}
 
 	if !usernameRegex.MatchString(trimmed) {
-		return Username{}, exception.ErrUsernameFormatInvalid
+		return nil, exception.ErrUsernameFormatInvalid
 	}
 
-	return Username{
+	return &Username{
 		value: trimmed,
 	}, nil
 }

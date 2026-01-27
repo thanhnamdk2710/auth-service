@@ -57,13 +57,13 @@ services:
     restart: unless-stopped
 
   # =====================
-  # Application (Production)
+  # Application (Development with Hot Reload)
   # =====================
   app:
     build:
       context: .
-      dockerfile: Dockerfile
-    container_name: app
+      dockerfile: Dockerfile.dev
+    container_name: app-dev
     env_file:
       - .env
     depends_on:
@@ -73,6 +73,9 @@ services:
         condition: service_started
     ports:
       - "${APP_PORT}:8000"
+    volumes:
+      - .:/app
+      - /app/tmp
     networks:
       - app-net
     restart: unless-stopped
