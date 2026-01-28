@@ -1,29 +1,30 @@
-package app
+package bootstrap
 
 import (
-	"github.com/thanhnamdk2710/auth-service/internal/application/service"
+	"github.com/thanhnamdk2710/auth-service/internal/application/port"
+	"github.com/thanhnamdk2710/auth-service/internal/infrastructure/audit"
 	"github.com/thanhnamdk2710/auth-service/internal/infrastructure/persistence/postgres"
 	"github.com/thanhnamdk2710/auth-service/internal/pkg/logger"
 )
 
 type Services struct {
-	audit service.AuditService
+	audit port.AuditLogger
 }
 
 func NewServices(db *Database, log *logger.Logger) *Services {
 	auditRepo := postgres.NewAuditRepo(db.Conn())
-	auditService := service.NewAuditService(
+	auditLogger := audit.NewAsyncLogger(
 		auditRepo,
 		log,
-		service.DefaultAuditServiceConfig(),
+		audit.DefaultConfig(),
 	)
 
 	return &Services{
-		audit: auditService,
+		audit: auditLogger,
 	}
 }
 
-func (s *Services) Audit() service.AuditService {
+func (s *Services) Audit() port.AuditLogger {
 	return s.audit
 }
 

@@ -3,10 +3,12 @@ package exception
 import "errors"
 
 var (
-	ErrUserAlreadyActive    = errors.New("User already active")
-	ErrUserInactive         = errors.New("User is inactive")
-	ErrUserAlreadyInactive  = errors.New("User already inactive")
-	ErrEmailAlreadyVerified = errors.New("Email already verified")
+	ErrUserAlreadyActive     = errors.New("User already active")
+	ErrUserInactive          = errors.New("User is inactive")
+	ErrUserAlreadyInactive   = errors.New("User already inactive")
+	ErrEmailAlreadyVerified  = errors.New("Email already verified")
+	ErrUsernameAlreadyExists = errors.New("Username already exists")
+	ErrEmailAlreadyExists    = errors.New("Email already exists")
 
 	ErrEmailRequired     = errors.New("Email is required")
 	ErrEmailMinMaxLength = errors.New("Email must be between 5 and 255 characters")

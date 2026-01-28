@@ -1,4 +1,4 @@
-package app
+package bootstrap
 
 import (
 	"context"
@@ -21,6 +21,7 @@ type App struct {
 	db       *Database
 	metrics  *metrics.Metrics
 	services *Services
+	handlers *Handlers
 	server   *Server
 }
 
@@ -54,12 +55,25 @@ func (a *App) Run() error {
 
 	a.initMetrics()
 	a.initServices()
+	a.initHandlers()
 	a.initServer()
 
-	go a.server.Start()
+	serverErr := make(chan error, 1)
+	go func() {
+		if err := a.server.Start(); err != nil {
+			serverErr <- err
+		}
+	}()
 
-	a.waitForShutdown(ctx)
-	return nil
+	select {
+	case err := <-serverErr:
+		a.logger.Error("Server error", zap.Error(err))
+		a.shutdown(ctx)
+		return err
+	case <-a.waitForSignal():
+		a.shutdown(ctx)
+		return nil
+	}
 }
 
 func (a *App) initDatabase(ctx context.Context) error {
@@ -83,27 +97,23 @@ func (a *App) initServices() {
 	a.services.Start()
 }
 
+func (a *App) initHandlers() {
+	a.handlers = NewHandlers(a.db, a.services.Audit(), a.logger)
+}
+
 func (a *App) initServer() {
 	a.server = NewServer(ServerOptions{
-		Port:         a.cfg.Server.Port,
-		Logger:       a.logger,
-		Metrics:      a.metrics,
-		DB:           a.db,
-		AuditService: a.services.Audit(),
+		Config:   a.cfg.Server,
+		Logger:   a.logger,
+		Metrics:  a.metrics,
+		Handlers: a.handlers,
 	})
 }
 
-func (a *App) waitForShutdown(ctx context.Context) {
+func (a *App) waitForSignal() <-chan os.Signal {
 	quit := make(chan os.Signal, 1)
-
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-	defer func() {
-		signal.Stop(quit)
-		close(quit)
-	}()
-
-	<-quit
-	a.shutdown(ctx)
+	return quit
 }
 
 func (a *App) shutdown(ctx context.Context) {

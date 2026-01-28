@@ -35,6 +35,44 @@ func (r *AuditRepo) Create(ctx context.Context, log *entity.AuditLog) error {
 	return err
 }
 
+func (r *AuditRepo) CreateBatch(ctx context.Context, logs []*entity.AuditLog) error {
+	if len(logs) == 0 {
+		return nil
+	}
+
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	stmt, err := tx.PrepareContext(ctx, `
+		INSERT INTO audit_logs (id, timestamp, user_id, action, details, ip_address, correlation_id)
+		VALUES ($1, $2, $3, $4, $5, $6, $7)
+	`)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	for _, log := range logs {
+		_, err := stmt.ExecContext(ctx,
+			log.ID,
+			log.Timestamp,
+			log.UserID,
+			log.Action,
+			log.Details,
+			sql.NullString{String: log.IPAddress, Valid: log.IPAddress != ""},
+			log.CorrelationID,
+		)
+		if err != nil {
+			return err
+		}
+	}
+
+	return tx.Commit()
+}
+
 func (r *AuditRepo) FindByUserID(ctx context.Context, userID string, limit, offset int) ([]*entity.AuditLog, error) {
 	query := `
 		SELECT id, timestamp, user_id, action, details, ip_address, correlation_id

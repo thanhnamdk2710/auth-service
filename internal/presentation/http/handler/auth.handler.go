@@ -6,18 +6,17 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/thanhnamdk2710/auth-service/internal/application/input"
-	"github.com/thanhnamdk2710/auth-service/internal/application/usecase"
-	"github.com/thanhnamdk2710/auth-service/internal/pkg/logger"
+	"github.com/thanhnamdk2710/auth-service/internal/application/port"
 	"github.com/thanhnamdk2710/auth-service/internal/presentation/http/request"
 	"github.com/thanhnamdk2710/auth-service/internal/validation"
 )
 
 type AuthHandler struct {
-	registerUC usecase.RegisterUseCase
-	logger     *logger.Logger
+	registerUC port.RegisterUseCase
+	logger     port.Logger
 }
 
-func NewAuthHandler(registerUC usecase.RegisterUseCase, logger *logger.Logger) *AuthHandler {
+func NewAuthHandler(registerUC port.RegisterUseCase, logger port.Logger) *AuthHandler {
 	return &AuthHandler{
 		registerUC: registerUC,
 		logger:     logger,

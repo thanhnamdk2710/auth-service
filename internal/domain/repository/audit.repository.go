@@ -8,6 +8,7 @@ import (
 
 type AuditRepository interface {
 	Create(ctx context.Context, log *entity.AuditLog) error
+	CreateBatch(ctx context.Context, logs []*entity.AuditLog) error
 	FindByUserID(ctx context.Context, userID string, limit, offset int) ([]*entity.AuditLog, error)
 	FindByCorrelationID(ctx context.Context, correlationID string) ([]*entity.AuditLog, error)
 }

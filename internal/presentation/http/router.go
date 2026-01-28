@@ -6,9 +6,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
-	"github.com/thanhnamdk2710/auth-service/internal/application/service"
-	"github.com/thanhnamdk2710/auth-service/internal/application/usecase"
-	"github.com/thanhnamdk2710/auth-service/internal/infrastructure/persistence/postgres"
 	"github.com/thanhnamdk2710/auth-service/internal/pkg/logger"
 	"github.com/thanhnamdk2710/auth-service/internal/pkg/metrics"
 	"github.com/thanhnamdk2710/auth-service/internal/presentation/http/handler"
@@ -16,14 +13,13 @@ import (
 	"github.com/thanhnamdk2710/auth-service/internal/validation"
 )
 
-type Deps struct {
-	Logger       *logger.Logger
-	Metrics      *metrics.Metrics
-	DB           *postgres.DB
-	AuditService service.AuditService
+type RouterDeps struct {
+	Logger      *logger.Logger
+	Metrics     *metrics.Metrics
+	AuthHandler *handler.AuthHandler
 }
 
-func New(deps Deps) *gin.Engine {
+func New(deps RouterDeps) *gin.Engine {
 	validation.Init()
 
 	r := gin.New()
@@ -39,18 +35,14 @@ func New(deps Deps) *gin.Engine {
 
 	r.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
-	userRepo := postgres.NewPostgreUserRepo(deps.DB)
-	registerUC := usecase.NewRegisterUsecase(userRepo, deps.AuditService, deps.Logger)
-	authHandler := handler.NewAuthHandler(registerUC, deps.Logger)
-
 	api := r.Group("/api/v1")
 	api.Use(middleware.RateLimitDefault())
 	{
 		auth := api.Group("/auth")
 		{
-			auth.POST("/register", authHandler.Register)
-			auth.GET("/login", authHandler.Login)
-			auth.GET("/forgot-password", authHandler.ForgotPassword)
+			auth.POST("/register", deps.AuthHandler.Register)
+			auth.POST("/login", deps.AuthHandler.Login)
+			auth.POST("/forgot-password", deps.AuthHandler.ForgotPassword)
 		}
 	}
 
